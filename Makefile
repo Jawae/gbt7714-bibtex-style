@@ -2,7 +2,7 @@
 
 NAME = gbt7714
 PKGFILES = $(NAME).sty
-BSTFILES = $(NAME)-plain.bst $(NAME)-unsrt.bst
+BSTFILES = $(NAME)-plain.bst $(NAME)-unsrt.bst $(NAME)-bachelor.bst
 TEST_DIR = test
 
 SHELL = bash
