@@ -100,6 +100,24 @@ FUNCTION {punct.space}
 { " "
 }
 
+FUNCTION {not}
+{   { #0 }
+    { #1 }
+  if$
+}
+
+FUNCTION {and}
+{   'skip$
+    { pop$ #0 }
+  if$
+}
+
+FUNCTION {or}
+{   { pop$ #1 }
+    'skip$
+  if$
+}
+
 FUNCTION {output.nonnull}
 { 's :=
   output.state mid.sentence =
@@ -171,7 +189,13 @@ FUNCTION {output.check}
 }
 
 FUNCTION {fin.entry}
-{ add.period$
+{ type$ "book" =
+  type$ "inbook" = or
+  type$ "incollection" = or
+  type$ "collection" = or
+    'skip$
+    'add.period$
+  if$
   write$
   newline$
 }
@@ -206,24 +230,6 @@ FUNCTION {new.slash}
 { output.state before.all =
     'skip$
     { after.slash 'output.state := }
-  if$
-}
-
-FUNCTION {not}
-{   { #0 }
-    { #1 }
-  if$
-}
-
-FUNCTION {and}
-{   'skip$
-    { pop$ #0 }
-  if$
-}
-
-FUNCTION {or}
-{   { pop$ #1 }
-    'skip$
   if$
 }
 
@@ -357,10 +363,7 @@ FUNCTION {format.names}
     { s nameptr "{vv~}{ll}{, jj}{, ff}" format.name$ 't :=
       t get.str.lang 'name.lang :=
       name.lang lang.en =
-        { t #1 "{vv~}{ll}{ f{~}}" format.name$ "u" change.case$
-          t #1 "{, jj}" format.name$ *
-          't :=
-        }
+        { t #1 "{vv~}{ll}{ f{~}}{, jj}" format.name$ 't := }
         { t #1 "{ll}{ff}" format.name$ 't := }
       if$
       nameptr #1 >
@@ -446,14 +449,7 @@ FUNCTION {is.doi.in.url}
 }
 
 FUNCTION {format.doi}
-{ doi empty$
-    { "" }
-    { is.doi.in.url
-        { "" }
-        { new.block "\doi{" doi * "}" * }
-      if$
-    }
-  if$
+{ ""
 }
 
 FUNCTION {format.title}
@@ -1088,6 +1084,7 @@ FUNCTION {monograph}
     }
   if$
   output
+  new.block
   format.year "year" output.check
   new.block
   format.series.vol.num.title "title" output.check
@@ -1110,6 +1107,7 @@ FUNCTION {incollection}
 { output.bibitem
   format.authors "author" output.check
   author format.key output
+  new.block
   format.year "year" output.check
   new.block
   format.title "title" output.check
@@ -1136,6 +1134,7 @@ FUNCTION {periodical}
 { output.bibitem
   format.authors "author" output.check
   author format.key output
+  new.block
   format.year "year" output.check
   new.block
   format.title "title" output.check
@@ -1155,6 +1154,7 @@ FUNCTION {article.in.journal}
 { output.bibitem
   format.authors "author" output.check
   author format.key output
+  new.block
   format.year "year" output.check
   new.block
   format.title "title" output.check
@@ -1176,6 +1176,7 @@ FUNCTION {patent}
 { output.bibitem
   format.authors output
   author format.key output
+  new.block
   format.year "year" output.check
   new.block
   format.title
@@ -1198,6 +1199,7 @@ FUNCTION {online}
 { output.bibitem
   format.authors output
   author format.key output
+  new.block
   format.year "year" output.check
   new.block
   format.series.vol.num.title "title" output.check
@@ -1270,7 +1272,11 @@ FUNCTION {map}
 }
 
 FUNCTION {mastersthesis}
-{ "D" set.mark
+{ is.in.chinese
+    { "\thumasterbib{}" }
+    { "D" }
+  if$
+ set.mark
   monograph
 }
 
@@ -1279,7 +1285,14 @@ FUNCTION {newspaper}
   article.in.journal
 }
 
-FUNCTION {phdthesis} { mastersthesis }
+FUNCTION {phdthesis}
+{ is.in.chinese
+    { "\thuphdbib{}" }
+    { "D" }
+  if$
+ set.mark
+  monograph
+}
 
 FUNCTION {proceedings}
 { "C" set.mark
