@@ -63,7 +63,7 @@ which was designed for use with the `natbib.sty' package.
 %<package>\NeedsTeXFormat{LaTeX2e}[1999/12/01]
 %<package>\ProvidesPackage{gbt7714}
 %<*package>
-    [2018/01/01 v1.0 GB/T 7714-2015 BibTeX Style]
+    [2018/03/16 v1.0.2 GB/T 7714-2015 BibTeX Style]
 %</package>
 %
 %<*driver>
@@ -208,7 +208,7 @@ which was designed for use with the `natbib.sty' package.
 %     文献类型             & entry type \\
 %     \midrule
 %     普通图书             & book 或 inbook \\
-%     图书（的析出文献）   & article 或 incollection \\
+%     图书（的析出文献）   & incollection \\
 %     会议录               & proceedings \\
 %     会议录（的析出文献） & inproceedings 或 conference \\
 %     汇编                 & collection* \\
@@ -337,9 +337,13 @@ which was designed for use with the `natbib.sty' package.
 }
 %    \end{macrocode}
 %
-% 需要 \pkg{natbib} 的 \opt{sort\&compress}。
+% \changes{v1.0.1}{2018/03/09}{在 author-year 模式下不再对引用排序。}
+% 只在顺序编码时使用 \opt{sort\&compress}。
 %    \begin{macrocode}
-\RequirePackage[sort&compress]{natbib}
+\if@gbt@numerical
+  \PassOptionsToPackage{sort&compress}{natbib}
+\fi
+\RequirePackage{natbib}
 %    \end{macrocode}
 %
 % 定义接口切换引用文献的标注法，可用 \cs{citestyle} 调用 \opt{numerical}
@@ -1078,11 +1082,13 @@ FUNCTION {format.anonymous}
   if$
 }
 
-INTEGERS { nameptr namesleft numnames name.lang}
+INTEGERS { nameptr namesleft numnames name.lang }
 
 %    \end{macrocode}
 %
 % Tsinghua requires no upper case names.
+%
+% \changes{v1.0.2}{2017/03/16}{修正参考文献姓名的“others”}
 %
 %    \begin{macrocode}
 FUNCTION {format.names}
@@ -1090,28 +1096,26 @@ FUNCTION {format.names}
   #1 'nameptr :=
   s num.names$ 'numnames :=
   numnames 'namesleft :=
-    { namesleft #0 > nameptr #4 < and }
+    { namesleft #0 > }
     { s nameptr "{vv~}{ll}{, jj}{, ff}" format.name$ 't :=
-      t get.str.lang 'name.lang :=
-      name.lang lang.en =
-        { t #1 "{vv~}{ll}{ f{~}}{, jj}" format.name$ 't := }
-        { t #1 "{ll}{ff}" format.name$ 't := }
-      if$
-      nameptr #1 >
-        { namesleft #1 >
-            { ", " * t * }
-            { t "others" =
-                { ", " * format.et.al * }
-                { ", " * t * }
+      nameptr #4 =
+        { format.et.al
+          #1 'namesleft :=
+        }
+        { t "others" =
+            { format.et.al }
+            { t get.str.lang 'name.lang :=
+              name.lang lang.en =
+                { t #1 "{vv~}{ll}{ f{~}}{, jj}" format.name$ }
+                { t #1 "{ll}{ff}" format.name$ }
               if$
             }
           if$
-          nameptr #3 = namesleft #1 > and
-            { ", " * format.et.al * }
-            'skip$
-          if$
         }
-        't
+      if$
+      nameptr #1 >
+        { ", " swap$ * * }
+        'skip$
       if$
       nameptr #1 + 'nameptr :=
       namesleft #1 - 'namesleft :=
