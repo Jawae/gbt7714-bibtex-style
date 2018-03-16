@@ -9,8 +9,7 @@ SHELL = bash
 LATEXMK = latexmk -xelatex -halt-on-error -interaction=nonstopmode
 VERSION = $(shell cat $(NAME).dtx | egrep -o "\[\d\d\d\d/\d\d\/\d\d v.+\]" \
 	  | egrep -o "v\S+")
-LOCAL = $(shell kpsewhich --var-value TEXMFLOCAL)
-UTREE = $(shell kpsewhich --var-value TEXMFHOME)
+TEXMF = $(shell kpsewhich --var-value TEXMFHOME)
 
 test : inst FORCE_MAKE
 	$(MAKE) -C $(TESTDIR) test
@@ -36,18 +35,18 @@ distclean :
 	$(MAKE) -C $(TEST_DIR) distclean
 
 inst : bst
-	mkdir -p $(UTREE)/tex/latex/$(NAME)
-	mkdir -p $(UTREE)/bibtex/bst/$(NAME)
-	cp $(BSTFILES) $(UTREE)/bibtex/bst/$(NAME)
-	cp $(PKGFILES) $(UTREE)/tex/latex/$(NAME)
+	mkdir -p $(TEXMF)/tex/latex/$(NAME)
+	mkdir -p $(TEXMF)/bibtex/bst/$(NAME)
+	cp $(BSTFILES) $(TEXMF)/bibtex/bst/$(NAME)
+	cp $(PKGFILES) $(TEXMF)/tex/latex/$(NAME)
 
 install : bst doc
-	mkdir -p $(LOCAL)/{doc,source,tex}/latex/$(NAME)
-	mkdir -p $(LOCAL)/bibtex/bst/$(NAME)
-	cp $(BSTFILES) $(LOCAL)/bibtex/bst/$(NAME)
-	cp $(NAME).pdf $(LOCAL)/doc/latex/$(NAME)
-	cp $(NAME).dtx $(LOCAL)/source/latex/$(NAME)
-	cp $(PKGFILES) $(LOCAL)/tex/latex/$(NAME)
+	mkdir -p $(TEXMF)/{doc,source,tex}/latex/$(NAME)
+	mkdir -p $(TEXMF)/bibtex/bst/$(NAME)
+	cp $(BSTFILES) $(TEXMF)/bibtex/bst/$(NAME)
+	cp $(NAME).pdf $(TEXMF)/doc/latex/$(NAME)
+	cp $(NAME).dtx $(TEXMF)/source/latex/$(NAME)
+	cp $(PKGFILES) $(TEXMF)/tex/latex/$(NAME)
 
 zip : bst doc
 	ln -sf . $(NAME)
